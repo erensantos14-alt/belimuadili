@@ -1,0 +1,55 @@
+-- ============================================================
+--  Başlangıç mekan verisi — İstanbul, kahve
+--  Şemadan SONRA çalıştır. Tekrar çalıştırmak güvenli
+--  (aynı isim+semt ikinci kez eklenmez).
+--  Kaynaklar: FilGezi 3. dalga kahveciler listesi, Yemek.com Kadıköy listesi
+-- ============================================================
+
+insert into public.places (name, district, city, category) values
+  ('Petra Roasting Co.',           'Gayrettepe',    'İstanbul', 'kahve'),
+  ('Petra Roasting Co.',           'Kanyon',        'İstanbul', 'kahve'),
+  ('Kronotrop',                    'Cihangir',      'İstanbul', 'kahve'),
+  ('Kronotrop',                    'Moda',          'İstanbul', 'kahve'),
+  ('Coffee Department',            'Balat',         'İstanbul', 'kahve'),
+  ('Coffee Sapiens',               'Karaköy',       'İstanbul', 'kahve'),
+  ('Federal Coffee Company',       'Galata',        'İstanbul', 'kahve'),
+  ('Drip Coffeeist',               'Asmalımescit',  'İstanbul', 'kahve'),
+  ('Drip Coffeeist',               'Bağdat Caddesi','İstanbul', 'kahve'),
+  ('MOC Ministry of Coffee',       'Nişantaşı',     'İstanbul', 'kahve'),
+  ('MOC İstanbul',                 'Kadıköy',       'İstanbul', 'kahve'),
+  ('Spada Coffee',                 'Nişantaşı',     'İstanbul', 'kahve'),
+  ('But First Coffee',             'Bomonti',       'İstanbul', 'kahve'),
+  ('Cup of Joy',                   'Bebek',         'İstanbul', 'kahve'),
+  ('Voi',                          'Bebek',         'İstanbul', 'kahve'),
+  ('Voi',                          'Beşiktaş',      'İstanbul', 'kahve'),
+  ('Four Letter Word',             'Burgazada',     'İstanbul', 'kahve'),
+  ('Walter''s Coffee Roastery',    'Moda',          'İstanbul', 'kahve'),
+  ('Rafine Espresso Bar',          'Moda',          'İstanbul', 'kahve'),
+  ('Coffee Manifesto',             'Moda',          'İstanbul', 'kahve'),
+  ('Cherrybean Coffees',           'Moda',          'İstanbul', 'kahve'),
+  ('Asuman Moda',                  'Moda',          'İstanbul', 'kahve'),
+  ('Brekkie Croissant & Cookie',   'Moda',          'İstanbul', 'kahve'),
+  ('Altkat Coffee Community',      'Moda',          'İstanbul', 'kahve'),
+  ('Maybe',                        'Moda',          'İstanbul', 'kahve'),
+  ('Mojo Movie Cafe',              'Moda',          'İstanbul', 'kahve'),
+  ('Story Coffee & Roastery',      'Yeldeğirmeni',  'İstanbul', 'kahve'),
+  ('Klar Coffee',                  'Caddebostan',   'İstanbul', 'kahve'),
+  ('Orbis Coffee',                 'Caddebostan',   'İstanbul', 'kahve'),
+  ('Santral Kahve Evi',            'Erenköy',       'İstanbul', 'kahve'),
+  ('DOZZE',                        'Merdivenköy',   'İstanbul', 'kahve'),
+  ('Montag Coffee Roasters',       'Kadıköy',       'İstanbul', 'kahve'),
+  ('Doctrine Coffee',              'Kadıköy',       'İstanbul', 'kahve'),
+  ('Good Coffee Roasting Co.',     'Kadıköy',       'İstanbul', 'kahve'),
+  ('Meet Lab Coffee',              'Kadıköy',       'İstanbul', 'kahve'),
+  ('Urban Roastery',               'Kadıköy',       'İstanbul', 'kahve'),
+  ('180 Coffee Bakery',            'Kadıköy',       'İstanbul', 'kahve'),
+  ('Fazıl Bey''in Türk Kahvesi',   'Kadıköy',       'İstanbul', 'kahve'),
+  ('Viyana Kahvesi',               'Kadıköy',       'İstanbul', 'kahve'),
+  ('Cafe Cambridge',               'Kadıköy',       'İstanbul', 'kahve'),
+  ('Village Coffee + Eatery',      'Kadıköy',       'İstanbul', 'kahve'),
+  ('Guten Morgen Bakery & Coffee', 'Kadıköy',       'İstanbul', 'kahve'),
+  ('V''noi Coffee',                'Kadıköy',       'İstanbul', 'kahve'),
+  ('Benazio Coffee',               'Kadıköy',       'İstanbul', 'kahve'),
+  ('Florida Coffee',               'Kadıköy',       'İstanbul', 'kahve'),
+  ('VAU Coffee',                   'Kadıköy',       'İstanbul', 'kahve')
+on conflict do nothing;
