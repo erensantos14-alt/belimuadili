@@ -4,6 +4,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Sıralama",
   description: "Gittiğin kahvecileri sırala, arkadaşlarının listesini gör.",
+  // iOS'ta "Ana Ekrana Ekle" dendiğinde tarayıcı çubuğu olmadan açılması için
+  appleWebApp: {
+    capable: true,
+    title: "Sıralama",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
