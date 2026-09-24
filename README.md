@@ -94,17 +94,19 @@ supabase/
 src/lib/
   ranking.ts           kovalar, puan hesabı, ikili arama — uygulamanın kalbi
   time.ts              "3 sa önce" gibi zaman etiketleri
+  me.ts                giriş yapan kullanıcı + kullanıcı adı
   types.ts             veri tipleri
   supabase/            tarayıcı ve sunucu istemcileri
 
 src/app/
   page.tsx             Akış — takip ettiklerinin son kayıtları
-  listem/              kendi sıralaman
   ekle/                mekan ara + kayıt akışı
-  gidilecekler/        gidilecekler listesi
+  u/[username]/        profil — sıralama + (kendi profilinse) gidilecekler
+                       girişsiz açılır, paylaşılan bağlantı burayı gösterir
   kisiler/             kişi arama ve öneriler
-  u/[username]/        herkese açık profil sayfası
   ayarlar/             kullanıcı adı, görünen ad, çıkış
+  listem/              eski adres, profile yönlendirir
+  gidilecekler/        eski adres, profile yönlendirir
   giris/               e-posta ile giriş
   auth/callback/       giriş bağlantısının döndüğü yer
   globals.css          tüm tasarım tokenları burada

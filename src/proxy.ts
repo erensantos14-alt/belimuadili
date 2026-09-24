@@ -32,7 +32,15 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublic = path.startsWith("/giris") || path.startsWith("/auth");
+
+  // Girişsiz açılabilecek yerler.
+  // /u/... profil sayfaları bilerek herkese açık: paylaşılan bağlantıyı
+  // açan kişi önce listeyi görsün, girişi ondan sonra istesin.
+  const isPublic =
+    path.startsWith("/giris") ||
+    path.startsWith("/auth") ||
+    path.startsWith("/u/") ||
+    path === "/manifest.webmanifest";
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();

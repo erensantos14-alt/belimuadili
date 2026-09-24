@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getMe } from "@/lib/me";
 import FeedList from "@/components/FeedList";
 import Tabs from "@/components/Tabs";
 import type { FeedRow } from "@/lib/types";
@@ -8,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AkisPage() {
   const supabase = await createClient();
+  const { username } = await getMe();
 
   const [{ data: feedData }, { count: followCount }] = await Promise.all([
     supabase.rpc("feed", { p_limit: 40 }),
@@ -24,14 +26,9 @@ export default async function AkisPage() {
           <h1 className="wordmark display">
             Akış<span>.</span>
           </h1>
-          <div className="head-actions">
-            <Link className="head-link" href="/kisiler">
-              Kişi bul
-            </Link>
-            <Link className="head-link" href="/ayarlar">
-              Ayarlar
-            </Link>
-          </div>
+          <Link className="head-link" href="/kisiler">
+            Kişi bul
+          </Link>
         </header>
 
         {rows.length > 0 ? (
@@ -42,7 +39,11 @@ export default async function AkisPage() {
             Uygulamanın asıl işi arkadaşlarının nereye gittiğini göstermek. Birilerini
             takip etmeden burası boş kalır.
             <div style={{ marginTop: 16 }}>
-              <Link className="btn" href="/kisiler" style={{ display: "inline-block", width: "auto" }}>
+              <Link
+                className="btn"
+                href="/kisiler"
+                style={{ display: "inline-block", width: "auto" }}
+              >
                 Kişi bul
               </Link>
             </div>
@@ -55,7 +56,7 @@ export default async function AkisPage() {
           </div>
         )}
       </div>
-      <Tabs />
+      <Tabs username={username} />
     </>
   );
 }

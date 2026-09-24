@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getMe } from "@/lib/me";
 import PeopleSearch from "@/components/PeopleSearch";
 import Tabs from "@/components/Tabs";
 import type { SuggestedPerson } from "@/lib/types";
@@ -8,14 +9,11 @@ export const dynamic = "force-dynamic";
 
 export default async function KisilerPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, username } = await getMe();
 
-  const [{ data: suggestedData }, { data: followData }, { data: me }] = await Promise.all([
+  const [{ data: suggestedData }, { data: followData }] = await Promise.all([
     supabase.rpc("suggested_people", { p_limit: 12 }),
     supabase.from("follows").select("followee_id").eq("follower_id", user!.id),
-    supabase.from("profiles").select("username").eq("id", user!.id).single(),
   ]);
 
   const suggested = (suggestedData ?? []) as SuggestedPerson[];
@@ -29,24 +27,20 @@ export default async function KisilerPage() {
             Kişi bul<span>.</span>
           </h1>
           <Link className="head-link" href="/">
-            Akış
+            ← Akış
           </Link>
         </header>
 
-        <PeopleSearch
-          meId={user!.id}
-          suggested={suggested}
-          followingIds={followingIds}
-        />
+        <PeopleSearch meId={user!.id} suggested={suggested} followingIds={followingIds} />
 
-        {me?.username && (
+        {username && (
           <p className="hint">
-            Senin bağlantın: <b>/u/{me.username}</b> — arkadaşlarına bunu gönder,
-            listeni görüp seni takip edebilsinler.
+            Senin bağlantın: <b>/u/{username}</b> — arkadaşlarına bunu gönder. Giriş
+            yapmadan da açılıyor, listeni görüp sonra kaydolabilirler.
           </p>
         )}
       </div>
-      <Tabs />
+      <Tabs username={username} />
     </>
   );
 }

@@ -3,22 +3,30 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const TABS = [
-  { href: "/", label: "Akış" },
-  { href: "/listem", label: "Listem" },
-  { href: "/ekle", label: "Ekle" },
-  { href: "/gidilecekler", label: "Gidilecekler" },
-];
-
-export default function Tabs() {
+/**
+ * Üç sekme. "Profil" doğrudan kendi herkese açık profiline gidiyor —
+ * yani başkalarının gördüğü sayfanın aynısını görüyorsun.
+ */
+export default function Tabs({ username }: { username: string | null }) {
   const pathname = usePathname();
+  const profileHref = username ? `/u/${username}` : "/ayarlar";
+
+  const tabs = [
+    { href: "/", label: "Akış" },
+    { href: "/ekle", label: "Ekle" },
+    { href: profileHref, label: "Profil" },
+  ];
+
   return (
     <nav className="tabs" aria-label="Bölümler">
-      {TABS.map((t) => {
-        const active = pathname === t.href;
+      {tabs.map((t) => {
+        const active =
+          t.label === "Profil"
+            ? pathname === profileHref || pathname === "/ayarlar"
+            : pathname === t.href;
         return (
           <Link
-            key={t.href}
+            key={t.label}
             href={t.href}
             className="tab"
             data-active={active}

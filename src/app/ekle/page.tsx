@@ -1,14 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { getMe } from "@/lib/me";
 import AddFlow from "@/components/AddFlow";
 import Tabs from "@/components/Tabs";
 
 export const dynamic = "force-dynamic";
 
 export default async function EklePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, username } = await getMe();
 
   return (
     <>
@@ -20,7 +17,7 @@ export default async function EklePage() {
         </header>
         <AddFlow userId={user!.id} />
       </div>
-      <Tabs />
+      <Tabs username={username} />
     </>
   );
 }

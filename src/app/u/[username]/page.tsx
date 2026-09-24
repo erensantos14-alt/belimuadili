@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMe } from "@/lib/me";
 import { BUCKETS, BUCKET_ORDER, formatScore, scoreFor } from "@/lib/ranking";
 import { initial } from "@/lib/time";
 import FollowButton from "@/components/FollowButton";
+import RankedList from "@/components/RankedList";
+import Wishlist from "@/components/Wishlist";
 import Tabs from "@/components/Tabs";
-import type { Entry } from "@/lib/types";
+import type { Entry, Place } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +19,7 @@ export default async function ProfilPage({
 }) {
   const { username } = await params;
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, username: myUsername } = await getMe();
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -29,7 +29,9 @@ export default async function ProfilPage({
 
   if (!profile) notFound();
 
-  const [{ data: entryData }, { count: followers }, { count: followingCount }, { data: rel }] =
+  const isMe = user?.id === profile.id;
+
+  const [{ data: entryData }, { count: followers }, { count: followingCount }, rel, wish] =
     await Promise.all([
       supabase
         .from("entries")
@@ -43,12 +45,23 @@ export default async function ProfilPage({
         .from("follows")
         .select("*", { count: "exact", head: true })
         .eq("follower_id", profile.id),
-      supabase
-        .from("follows")
-        .select("followee_id")
-        .eq("follower_id", user!.id)
-        .eq("followee_id", profile.id)
-        .maybeSingle(),
+      user
+        ? supabase
+            .from("follows")
+            .select("followee_id")
+            .eq("follower_id", user.id)
+            .eq("followee_id", profile.id)
+            .maybeSingle()
+            .then((r) => r.data)
+        : Promise.resolve(null),
+      isMe
+        ? supabase
+            .from("wishlist")
+            .select("place_id, created_at, places(*)")
+            .eq("user_id", profile.id)
+            .order("created_at", { ascending: false })
+            .then((r) => r.data)
+        : Promise.resolve(null),
     ]);
 
   const entries = ((entryData ?? []) as unknown as Entry[]).sort((a, b) => {
@@ -57,16 +70,23 @@ export default async function ProfilPage({
     return ba === bb ? a.position - b.position : ba - bb;
   });
 
-  const isMe = user!.id === profile.id;
+  const wishPlaces = ((wish ?? []) as unknown as { places: Place }[]).map((r) => r.places);
+
   let rank = 0;
 
   return (
     <>
       <div className="app">
         <header className="head">
-          <Link className="head-link" href="/">
-            ← Akış
-          </Link>
+          {user ? (
+            <Link className="head-link" href="/">
+              ← Akış
+            </Link>
+          ) : (
+            <span className="wordmark display" style={{ fontSize: 18 }}>
+              Sıralama<span>.</span>
+            </span>
+          )}
           {isMe && (
             <Link className="head-link" href="/ayarlar">
               Ayarlar
@@ -80,11 +100,18 @@ export default async function ProfilPage({
             <h1 className="profile-name">{profile.display_name || profile.username}</h1>
             <div className="profile-handle">@{profile.username}</div>
           </div>
-          <FollowButton
-            meId={user!.id}
-            targetId={profile.id}
-            initialFollowing={Boolean(rel)}
-          />
+          {!isMe &&
+            (user ? (
+              <FollowButton
+                meId={user.id}
+                targetId={profile.id}
+                initialFollowing={Boolean(rel)}
+              />
+            ) : (
+              <Link className="follow-btn" href="/giris">
+                Takip et
+              </Link>
+            ))}
         </div>
 
         <div className="stat-row">
@@ -99,12 +126,13 @@ export default async function ProfilPage({
           </span>
         </div>
 
-        {entries.length === 0 ? (
+        {/* Kendi profilimde silme butonlu liste, başkasınınkinde sade liste */}
+        {isMe ? (
+          <RankedList entries={entries} />
+        ) : entries.length === 0 ? (
           <div className="empty">
             <strong>Liste boş</strong>
-            {isMe
-              ? "Ekle sekmesinden ilk mekanını kaydet."
-              : "Bu kişi henüz bir mekan kaydetmemiş."}
+            Bu kişi henüz bir mekan kaydetmemiş.
           </div>
         ) : (
           BUCKETS.map((bucket) => {
@@ -142,8 +170,26 @@ export default async function ProfilPage({
             );
           })
         )}
+
+        {isMe && (
+          <section style={{ marginTop: 30 }}>
+            <div className="bucket-head">Gidilecekler · {wishPlaces.length}</div>
+            <Wishlist userId={profile.id} places={wishPlaces} />
+          </section>
+        )}
+
+        {!user && (
+          <div className="foot">
+            Bu {profile.display_name || profile.username} kişisinin listesi. Kendi
+            sıralamanı tutmak ve takip etmek için{" "}
+            <Link className="head-link" href="/giris">
+              giriş yap
+            </Link>
+            .
+          </div>
+        )}
       </div>
-      <Tabs />
+      {user && <Tabs username={myUsername} />}
     </>
   );
 }
