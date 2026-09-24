@@ -1,17 +1,18 @@
-import type { BucketKey } from "./ranking";
+import type { BucketKey, CategoryKey } from "./ranking";
 
 export type Place = {
   id: string;
   name: string;
   district: string | null;
   city: string;
-  category: string;
+  category: CategoryKey;
 };
 
 export type Entry = {
   id: string;
   user_id: string;
   place_id: string;
+  category: CategoryKey;
   bucket: BucketKey;
   position: number;
   note: string | null;
@@ -34,6 +35,7 @@ export type FeedRow = {
   place_id: string;
   place_name: string;
   district: string | null;
+  category: CategoryKey;
   bucket: BucketKey;
   /** Kovadaki konum. "position" PostgreSQL'de ayrılmış kelime olduğu için bu ad. */
   bucket_position: number;

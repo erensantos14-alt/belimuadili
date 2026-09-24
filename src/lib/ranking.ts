@@ -8,6 +8,40 @@
  * 8 mekan → 3 soru, 32 mekan → 5 soru.
  */
 
+export type CategoryKey = "kahve" | "restoran" | "bar" | "firin" | "tatli";
+
+export type Category = {
+  key: CategoryKey;
+  label: string;
+  /** Tekil hâli — "Kronotrop'u kahve listene ekle" gibi cümleler için. */
+  one: string;
+};
+
+/**
+ * Kategoriler. Sıralama her kategorinin kendi içinde yapılıyor —
+ * bir kahveciyi restoranla karşılaştırmak anlamsız olurdu.
+ *
+ * Her kategorinin kendi vurgu rengi var; renkler globals.css'te
+ * [data-kategori] blokları altında tanımlı.
+ */
+export const CATEGORIES: Category[] = [
+  { key: "kahve", label: "Kahve", one: "kahveci" },
+  { key: "restoran", label: "Restoran", one: "restoran" },
+  { key: "bar", label: "Bar", one: "bar" },
+  { key: "firin", label: "Fırın", one: "fırın" },
+  { key: "tatli", label: "Tatlı", one: "tatlıcı" },
+];
+
+export const DEFAULT_CATEGORY: CategoryKey = "kahve";
+
+export function isCategory(v: string | undefined | null): v is CategoryKey {
+  return CATEGORIES.some((c) => c.key === v);
+}
+
+export function categoryOf(key: CategoryKey): Category {
+  return CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[0];
+}
+
 export type BucketKey = "iyi" | "orta" | "kotu";
 
 export type Bucket = {

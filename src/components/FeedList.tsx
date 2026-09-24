@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BUCKETS, formatScore, scoreFor } from "@/lib/ranking";
+import { BUCKETS, categoryOf, formatScore, scoreFor } from "@/lib/ranking";
 import { initial, relativeTime } from "@/lib/time";
 import type { FeedRow } from "@/lib/types";
 
@@ -12,7 +12,9 @@ export default function FeedList({ rows }: { rows: FeedRow[] }) {
         const who = row.display_name || row.username;
 
         return (
-          <article className="feed-card" key={row.entry_id}>
+          // Kategori rengi sadece bu kartın rozetinde görünsün diye
+          // data-kategori burada duruyor, sayfanın tamamında değil.
+          <article className="feed-card" key={row.entry_id} data-kategori={row.category}>
             <Link href={`/u/${row.username}`} className="avatar" aria-label={`${who} profili`}>
               {initial(row.display_name, row.username)}
             </Link>
@@ -28,6 +30,7 @@ export default function FeedList({ rows }: { rows: FeedRow[] }) {
               <div className="feed-place">{row.place_name}</div>
 
               <div className="feed-meta">
+                <span className="cat-chip">{categoryOf(row.category).label}</span>
                 {row.district && <span>{row.district}</span>}
                 <span className={`dot ${row.bucket}`} />
                 <span>{bucket.label}</span>

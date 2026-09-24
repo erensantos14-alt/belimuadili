@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   BUCKETS,
+  CATEGORIES,
+  DEFAULT_CATEGORY,
   answer,
+  categoryOf,
   finalPosition,
   formatScore,
   isDone,
@@ -13,8 +16,10 @@ import {
   scoreFor,
   startCompare,
   type BucketKey,
+  type CategoryKey,
   type CompareState,
 } from "@/lib/ranking";
+import CategoryStrip from "./CategoryStrip";
 import type { Entry, Place } from "@/lib/types";
 
 type Step =
@@ -27,6 +32,7 @@ export default function AddFlow({ userId }: { userId: string }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
+  const [category, setCategory] = useState<CategoryKey>(DEFAULT_CATEGORY);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Place[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -39,7 +45,7 @@ export default function AddFlow({ userId }: { userId: string }) {
   const loadEntries = useCallback(async () => {
     const { data } = await supabase
       .from("entries")
-      .select("id, user_id, place_id, bucket, position, note, visited_at, places(*)")
+      .select("id, user_id, place_id, category, bucket, position, note, visited_at, places(*)")
       .eq("user_id", userId);
     setEntries((data ?? []) as unknown as Entry[]);
   }, [supabase, userId]);
@@ -59,16 +65,25 @@ export default function AddFlow({ userId }: { userId: string }) {
       const { data } = await supabase
         .from("places")
         .select("*")
+        .eq("category", category)
         .or(`name.ilike.%${q}%,district.ilike.%${q}%`)
         .order("name")
         .limit(12);
       setResults((data ?? []) as Place[]);
     }, 220);
     return () => clearTimeout(timer);
-  }, [query, supabase]);
+  }, [query, supabase, category]);
 
+  // Karşılaştırmalar yalnızca aynı kategorideki kayıtlarla yapılıyor.
   const bucketList = (bucket: BucketKey) =>
-    entries.filter((e) => e.bucket === bucket).sort((a, b) => a.position - b.position);
+    entries
+      .filter((e) => e.bucket === bucket && e.category === category)
+      .sort((a, b) => a.position - b.position);
+
+  const counts: Partial<Record<CategoryKey, number>> = {};
+  for (const c of CATEGORIES) {
+    counts[c.key] = entries.filter((e) => e.category === c.key).length;
+  }
 
   function reset() {
     setStep({ name: "search" });
@@ -92,7 +107,7 @@ export default function AddFlow({ userId }: { userId: string }) {
     setError(null);
     const { data, error } = await supabase
       .from("places")
-      .insert({ name, city: "İstanbul", category: "kahve", created_by: userId })
+      .insert({ name, city: "İstanbul", category, created_by: userId })
       .select()
       .single();
     setBusy(false);
@@ -171,6 +186,7 @@ export default function AddFlow({ userId }: { userId: string }) {
     return (
       <Sheet
         kicker={`${step.place.name}${step.place.district ? ` · ${step.place.district}` : ""}`}
+        kategori={category}
         onClose={reset}
       >
         <h2 className="sheet-q">Nasıldı?</h2>
@@ -203,6 +219,7 @@ export default function AddFlow({ userId }: { userId: string }) {
       <Sheet
         kicker={BUCKETS.find((b) => b.key === step.bucket)!.label}
         progress={`${step.state.asked + 1} / ~${step.state.maxAsks}`}
+        kategori={category}
         onClose={reset}
       >
         <h2 className="sheet-q">Hangisi daha iyiydi?</h2>
@@ -244,7 +261,7 @@ export default function AddFlow({ userId }: { userId: string }) {
         .findIndex((e) => e.id === step.entry.id) + 1;
 
     return (
-      <Sheet kicker="Eklendi" onClose={() => { reset(); router.refresh(); }}>
+      <Sheet kicker="Eklendi" kategori={category} onClose={() => { reset(); router.refresh(); }}>
         <div className="verdict">
           <div className="verdict-score">{formatScore(score)}</div>
           <div className="verdict-pos">
@@ -280,10 +297,21 @@ export default function AddFlow({ userId }: { userId: string }) {
 
   const rankedIds = new Set(entries.map((e) => e.place_id));
   const q = query.trim();
+  const cat = categoryOf(category);
 
   return (
-    <>
+    <div data-kategori={category}>
       {error && <div className="error">{error}</div>}
+
+      <CategoryStrip
+        active={category}
+        counts={counts}
+        onSelect={(k) => {
+          setCategory(k);
+          setQuery("");
+          setResults([]);
+        }}
+      />
 
       <div className="search">
         <span className="search-ico" aria-hidden="true">
@@ -293,7 +321,7 @@ export default function AddFlow({ userId }: { userId: string }) {
           id="placeSearch"
           type="search"
           autoComplete="off"
-          placeholder="Mekan ara — Kronotrop, Moda, Balat…"
+          placeholder={`${cat.label} ara — isim ya da semt…`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -302,7 +330,7 @@ export default function AddFlow({ userId }: { userId: string }) {
       {q.length < 2 && (
         <div className="empty">
           <strong>Bugün nereye gittin?</strong>
-          Mekanın adını ya da semtini yazmaya başla.
+          Önce kategoriyi seç, sonra mekanın adını ya da semtini yazmaya başla.
         </div>
       )}
 
@@ -329,7 +357,7 @@ export default function AddFlow({ userId }: { userId: string }) {
         <button type="button" className="result" disabled={busy} onClick={addCustomPlace}>
           <div>
             <div className="name">“{q}” ekle</div>
-            <div className="sub">listede yok — yeni mekan olarak kaydet</div>
+            <div className="sub">listede yok — yeni {cat.one} olarak kaydet</div>
           </div>
           <span className="plus">+</span>
         </button>
@@ -337,9 +365,9 @@ export default function AddFlow({ userId }: { userId: string }) {
 
       <p className="hint">
         Listede olmayan mekanı adını yazıp ekleyebilirsin. Eklediğin mekan herkesin
-        aramasında çıkar.
+        aramasında çıkar. Sıralama her kategoride ayrı tutuluyor.
       </p>
-    </>
+    </div>
   );
 }
 
@@ -348,16 +376,18 @@ export default function AddFlow({ userId }: { userId: string }) {
 function Sheet({
   kicker,
   progress,
+  kategori,
   onClose,
   children,
 }: {
   kicker: string;
   progress?: string;
+  kategori: CategoryKey;
   onClose: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <div className="sheet" role="dialog" aria-modal="true">
+    <div className="sheet" role="dialog" aria-modal="true" data-kategori={kategori}>
       <div className="sheet-inner">
         <div className="sheet-top">
           <div className="sheet-kicker">{kicker}</div>

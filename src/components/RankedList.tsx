@@ -6,7 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 import { BUCKETS, formatScore, scoreFor, type BucketKey } from "@/lib/ranking";
 import type { Entry } from "@/lib/types";
 
-export default function RankedList({ entries }: { entries: Entry[] }) {
+export default function RankedList({
+  entries,
+  emptyHint,
+}: {
+  entries: Entry[];
+  emptyHint?: string;
+}) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +34,8 @@ export default function RankedList({ entries }: { entries: Entry[] }) {
     return (
       <div className="empty">
         <strong>Liste boş</strong>
-        Ekle sekmesinden ilk mekanını kaydet — sıralama ikinci mekandan itibaren başlar.
+        {emptyHint ?? "Ekle sekmesinden ilk mekanını kaydet."} Sıralama ikinci
+        mekandan itibaren başlar.
       </div>
     );
   }

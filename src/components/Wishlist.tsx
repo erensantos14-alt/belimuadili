@@ -3,9 +3,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { categoryOf, type CategoryKey } from "@/lib/ranking";
 import type { Place } from "@/lib/types";
 
-export default function Wishlist({ userId, places }: { userId: string; places: Place[] }) {
+export default function Wishlist({
+  userId,
+  places,
+  category,
+}: {
+  userId: string;
+  places: Place[];
+  category: CategoryKey;
+}) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
@@ -26,13 +35,14 @@ export default function Wishlist({ userId, places }: { userId: string; places: P
       const { data } = await supabase
         .from("places")
         .select("*")
+        .eq("category", category)
         .or(`name.ilike.%${q}%,district.ilike.%${q}%`)
         .order("name")
         .limit(8);
       setResults((data ?? []) as Place[]);
     }, 220);
     return () => clearTimeout(timer);
-  }, [query, supabase]);
+  }, [query, supabase, category]);
 
   async function add(place: Place) {
     setBusy(true);
@@ -69,7 +79,7 @@ export default function Wishlist({ userId, places }: { userId: string; places: P
           id="wishSearch"
           type="search"
           autoComplete="off"
-          placeholder="Gidilecekler listene mekan ekle…"
+          placeholder={`Gidilecekler listene ${categoryOf(category).one} ekle…`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

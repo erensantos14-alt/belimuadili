@@ -22,9 +22,13 @@ kovadaki konumundan türüyor. İkili arama olduğu için 32 mekanlık listede b
 3. Bu repodaki `supabase/01_schema.sql` dosyasının içeriğini yapıştır → **Run**.
 4. Yeni bir sorgu aç, `supabase/02_seed_places.sql` içeriğini yapıştır → **Run**.
    Bu, 46 İstanbul kahvecisini yükler.
-5. Yeni bir sorgu aç, `supabase/03_social.sql` içeriğini yapıştır → **Run**.
-   Takip, akış ve profil için gereken ekler. (Kurulumu daha önce yaptıysan
-   sadece bunu çalıştırman yeterli — diğer ikisini tekrar çalıştırmaya gerek yok.)
+5. Kalan dosyaları sırayla, her biri yeni bir sorguda çalıştır:
+   - `supabase/03_social.sql` — takip, akış, profil
+   - `supabase/04_categories.sql` — kategoriye göre sıralama
+   - `supabase/05_seed_categories.sql` — restoran, bar, fırın, tatlı mekanları
+
+   Kurulum zaten varsa sadece yenilerini çalıştır; eskileri tekrar çalıştırmak
+   da zararsız.
 6. **Project Settings → API Keys** sayfasından şu ikisini kopyala:
    - **Project URL** (Data API sayfasında) — `https://xxxx.supabase.co`
    - **Publishable key** — `sb_publishable_` ile başlar
@@ -87,9 +91,11 @@ npm run dev
 
 ```
 supabase/
-  01_schema.sql        tablolar, RLS politikaları, sıraya yerleştirme fonksiyonu
-  02_seed_places.sql   46 İstanbul kahvecisi
-  03_social.sql        takip/akış/profil ekleri, feed() ve suggested_people()
+  01_schema.sql           tablolar, RLS politikaları, sıraya yerleştirme
+  02_seed_places.sql      46 İstanbul kahvecisi
+  03_social.sql           takip/akış/profil, feed() ve suggested_people()
+  04_categories.sql       sıralamayı kategoriye göre ayırır
+  05_seed_categories.sql  restoran, bar, fırın, tatlı mekanları
 
 src/lib/
   ranking.ts           kovalar, puan hesabı, ikili arama — uygulamanın kalbi
@@ -140,10 +146,12 @@ Sıradaki iş, önem sırasıyla:
 1. **Fotoğraf** — `entries.photo_path` alanı hazır; Supabase Storage bağlanacak.
 2. **Mekan sayfası** — kimler gitmiş, arkadaş ortalaması, Ara / Instagram /
    Yol tarifi butonları.
-3. **Kategoriler** — `places.category` hazır; şimdilik sadece `kahve` dolu.
-   Bar ve restoran eklenecek, her kategori kendi sıralamasıyla.
+3. **Fırın ve tatlı verisi** — bu iki kategoride sadece 10-12 mekan var,
+   diğerlerinde 40+. Derinleştirilmesi gerekiyor.
 4. **Damak uyumu** — iki kişinin ortak mekanlardaki sıralama benzerliği.
 5. **Kaydı yeniden sıralama** — mevcut bir kaydın yerini sonradan değiştirmek.
+6. **Kategori simgeleri** — şu an kategoriler sadece renkle ayrışıyor;
+   simge eklenirse renk körlüğünde de ayırt edilir.
 
 Bilerek yapılmayanlar: rezervasyon entegrasyonu, liderlik tablosu, streak,
 harita. Kullanıcı yoğunluğu olmadan hiçbiri anlam taşımıyor.

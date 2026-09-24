@@ -2,8 +2,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMe } from "@/lib/me";
-import { BUCKETS, BUCKET_ORDER, formatScore, scoreFor } from "@/lib/ranking";
+import {
+  BUCKETS,
+  BUCKET_ORDER,
+  CATEGORIES,
+  DEFAULT_CATEGORY,
+  categoryOf,
+  formatScore,
+  isCategory,
+  scoreFor,
+  type CategoryKey,
+} from "@/lib/ranking";
 import { initial } from "@/lib/time";
+import CategoryStrip from "@/components/CategoryStrip";
 import FollowButton from "@/components/FollowButton";
 import RankedList from "@/components/RankedList";
 import Wishlist from "@/components/Wishlist";
@@ -14,10 +25,15 @@ export const dynamic = "force-dynamic";
 
 export default async function ProfilPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ username: string }>;
+  searchParams: Promise<{ k?: string }>;
 }) {
   const { username } = await params;
+  const { k } = await searchParams;
+  const category: CategoryKey = isCategory(k) ? k : DEFAULT_CATEGORY;
+
   const supabase = await createClient();
   const { user, username: myUsername } = await getMe();
 
@@ -35,7 +51,7 @@ export default async function ProfilPage({
     await Promise.all([
       supabase
         .from("entries")
-        .select("id, user_id, place_id, bucket, position, note, visited_at, places(*)")
+        .select("id, user_id, place_id, category, bucket, position, note, visited_at, places(*)")
         .eq("user_id", profile.id),
       supabase
         .from("follows")
@@ -64,19 +80,32 @@ export default async function ProfilPage({
         : Promise.resolve(null),
     ]);
 
-  const entries = ((entryData ?? []) as unknown as Entry[]).sort((a, b) => {
-    const ba = BUCKET_ORDER.indexOf(a.bucket);
-    const bb = BUCKET_ORDER.indexOf(b.bucket);
-    return ba === bb ? a.position - b.position : ba - bb;
-  });
+  const all = (entryData ?? []) as unknown as Entry[];
 
-  const wishPlaces = ((wish ?? []) as unknown as { places: Place }[]).map((r) => r.places);
+  // Kategori başına kaç kayıt var — şeritteki sayılar
+  const counts: Partial<Record<CategoryKey, number>> = {};
+  for (const c of CATEGORIES) {
+    counts[c.key] = all.filter((e) => e.category === c.key).length;
+  }
 
+  const entries = all
+    .filter((e) => e.category === category)
+    .sort((a, b) => {
+      const ba = BUCKET_ORDER.indexOf(a.bucket);
+      const bb = BUCKET_ORDER.indexOf(b.bucket);
+      return ba === bb ? a.position - b.position : ba - bb;
+    });
+
+  const wishPlaces = ((wish ?? []) as unknown as { places: Place }[])
+    .map((r) => r.places)
+    .filter((p) => p.category === category);
+
+  const cat = categoryOf(category);
   let rank = 0;
 
   return (
     <>
-      <div className="app">
+      <div className="app" data-kategori={category}>
         <header className="head">
           {user ? (
             <Link className="head-link" href="/">
@@ -116,7 +145,7 @@ export default async function ProfilPage({
 
         <div className="stat-row">
           <span className="stat">
-            <b>{entries.length}</b> mekan
+            <b>{all.length}</b> mekan
           </span>
           <span className="stat">
             <b>{followers ?? 0}</b> takipçi
@@ -126,13 +155,18 @@ export default async function ProfilPage({
           </span>
         </div>
 
-        {/* Kendi profilimde silme butonlu liste, başkasınınkinde sade liste */}
+        <CategoryStrip
+          active={category}
+          counts={counts}
+          basePath={`/u/${profile.username}`}
+        />
+
         {isMe ? (
-          <RankedList entries={entries} />
+          <RankedList entries={entries} emptyHint={`Ekle sekmesinden ilk ${cat.one} kaydını yap.`} />
         ) : entries.length === 0 ? (
           <div className="empty">
-            <strong>Liste boş</strong>
-            Bu kişi henüz bir mekan kaydetmemiş.
+            <strong>{cat.label} listesi boş</strong>
+            Bu kişi bu kategoride henüz bir mekan kaydetmemiş.
           </div>
         ) : (
           BUCKETS.map((bucket) => {
@@ -174,7 +208,7 @@ export default async function ProfilPage({
         {isMe && (
           <section style={{ marginTop: 30 }}>
             <div className="bucket-head">Gidilecekler · {wishPlaces.length}</div>
-            <Wishlist userId={profile.id} places={wishPlaces} />
+            <Wishlist userId={profile.id} places={wishPlaces} category={category} />
           </section>
         )}
 
