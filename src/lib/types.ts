@@ -35,7 +35,8 @@ export type FeedRow = {
   place_name: string;
   district: string | null;
   bucket: BucketKey;
-  position: number;
+  /** Kovadaki konum. "position" PostgreSQL'de ayrılmış kelime olduğu için bu ad. */
+  bucket_position: number;
   bucket_size: number;
   note: string | null;
   created_at: string;

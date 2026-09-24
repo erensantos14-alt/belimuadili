@@ -50,20 +50,22 @@ create policy "kendi profilini günceller"
 -- ---------- akış sorgusu ----------
 -- Takip ettiklerinin son kayıtları, mekan ve profil bilgisiyle birlikte.
 -- Tek çağrı olması hem hızlı hem de sayfalama yapmayı kolaylaştırıyor.
+-- Not: dönüş sütunu "position" olamaz — PostgreSQL'de ayrılmış bir kelime.
+-- Bu yüzden bucket_position diyoruz.
 create or replace function public.feed(p_limit int default 40, p_before timestamptz default null)
 returns table (
-  entry_id     uuid,
-  user_id      uuid,
-  username     text,
-  display_name text,
-  place_id     uuid,
-  place_name   text,
-  district     text,
-  bucket       text,
-  position     int,
-  bucket_size  bigint,
-  note         text,
-  created_at   timestamptz
+  entry_id        uuid,
+  user_id         uuid,
+  username        text,
+  display_name    text,
+  place_id        uuid,
+  place_name      text,
+  district        text,
+  bucket          text,
+  bucket_position int,
+  bucket_size     bigint,
+  note            text,
+  created_at      timestamptz
 )
 language sql
 security invoker
