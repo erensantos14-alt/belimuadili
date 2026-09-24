@@ -14,7 +14,9 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     orientation: "portrait",
     background_color: "#f2f1ec",
-    theme_color: "#0e6a5e",
+    // Sayfanın zemin rengiyle aynı: ana ekrandan açıldığında üstteki
+    // durum çubuğu uygulamanın içine karışıyor, ayrı bir şerit gibi durmuyor.
+    theme_color: "#f2f1ec",
     lang: "tr",
     icons: [
       {

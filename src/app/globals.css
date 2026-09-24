@@ -1,8 +1,15 @@
 /* ============================================================
-   Tasarım tokenları — prototipteki paletin aynısı.
-   Renk değiştirmek istersen tek yer burası.
+   Tasarım tokenları — renk değiştirmek istersen tek yer burası.
+
+   Uygulama bilerek tek temalı: her zaman açık. Cihaz koyu temada olsa
+   bile uygulama aynı görünüyor, böylece herkes aynı şeyi görüyor ve
+   paylaşılan ekran görüntüleri tutarlı oluyor.
+   Koyu tema istenirse color-scheme'i kaldırıp bu blokların koyu
+   eşlerini eklemek gerekir.
    ============================================================ */
 :root {
+  /* cihaz koyu temadayken form öğelerinin de açık kalmasını sağlar */
+  color-scheme: light only;
   --paper: #f2f1ec;
   --surface: #ffffff;
   --surface-2: #e9e8e1;
@@ -16,41 +23,6 @@
   --mid: #b8901f;
   --bad: #b2563f;
   --radius: 14px;
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #111614;
-    --surface: #1a2220;
-    --surface-2: #232c29;
-    --ink: #e9eeeb;
-    --muted: #8e9c97;
-    --line: #2c3633;
-    --accent: #43c3ae;
-    --accent-ink: #06211d;
-    --accent-wash: #16302c;
-    --good: #4fbb88;
-    --mid: #d9b24a;
-    --bad: #d97f66;
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme="dark"] {
-  --paper: #111614;
-  --surface: #1a2220;
-  --surface-2: #232c29;
-  --ink: #e9eeeb;
-  --muted: #8e9c97;
-  --line: #2c3633;
-  --accent: #43c3ae;
-  --accent-ink: #06211d;
-  --accent-wash: #16302c;
-  --good: #4fbb88;
-  --mid: #d9b24a;
-  --bad: #d97f66;
-  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -274,26 +246,15 @@ a { color: inherit; text-decoration: none; }
    Sadece vurgu rengi (--accent ve türevleri) değişiyor. Kova renkleri
    (--good / --mid / --bad) sabit kalıyor: onlar "beğendim / idare eder /
    beğenmedim" anlamını taşıyor, kategoriyle karışmamalı.
+
+   Renkler yeşil, kehribar ve kırmızı bölgelerinden uzak seçildi —
+   o üç ton kova anlamlarına ait.
    ============================================================ */
 [data-kategori="kahve"]    { --accent:#0E6A5E; --accent-wash:#DDEBE7; --accent-ink:#FFFFFF; }
 [data-kategori="restoran"] { --accent:#6B4C9A; --accent-wash:#E9E2F4; --accent-ink:#FFFFFF; }
 [data-kategori="bar"]      { --accent:#33529E; --accent-wash:#E0E6F6; --accent-ink:#FFFFFF; }
 [data-kategori="firin"]    { --accent:#7A4A2B; --accent-wash:#F0E4D8; --accent-ink:#FFFFFF; }
 [data-kategori="tatli"]    { --accent:#A8326B; --accent-wash:#F7E0EA; --accent-ink:#FFFFFF; }
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) [data-kategori="kahve"]    { --accent:#43C3AE; --accent-wash:#16302C; --accent-ink:#06211D; }
-  :root:not([data-theme="light"]) [data-kategori="restoran"] { --accent:#B49BE0; --accent-wash:#241A38; --accent-ink:#1C1030; }
-  :root:not([data-theme="light"]) [data-kategori="bar"]      { --accent:#8FA6E8; --accent-wash:#18203C; --accent-ink:#0D162E; }
-  :root:not([data-theme="light"]) [data-kategori="firin"]    { --accent:#D2A077; --accent-wash:#2E2016; --accent-ink:#2A170A; }
-  :root:not([data-theme="light"]) [data-kategori="tatli"]    { --accent:#E683B0; --accent-wash:#331724; --accent-ink:#2E0A1C; }
-}
-
-:root[data-theme="dark"] [data-kategori="kahve"]    { --accent:#43C3AE; --accent-wash:#16302C; --accent-ink:#06211D; }
-:root[data-theme="dark"] [data-kategori="restoran"] { --accent:#B49BE0; --accent-wash:#241A38; --accent-ink:#1C1030; }
-:root[data-theme="dark"] [data-kategori="bar"]      { --accent:#8FA6E8; --accent-wash:#18203C; --accent-ink:#0D162E; }
-:root[data-theme="dark"] [data-kategori="firin"]    { --accent:#D2A077; --accent-wash:#2E2016; --accent-ink:#2A170A; }
-:root[data-theme="dark"] [data-kategori="tatli"]    { --accent:#E683B0; --accent-wash:#331724; --accent-ink:#2E0A1C; }
 
 /* ---------- kategori şeridi ---------- */
 .cat-strip {
